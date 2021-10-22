@@ -1,0 +1,15 @@
+{
+  "name": "do-vpn",
+  "version": "1.0.0",
+  "description": "Creates OpenVPN VM on DigitalOcean",
+  "main": "make-vpn.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "do-wrapper": "^3.11.1",
+    "ssh2": "^1.4.0"
+  }
+}
