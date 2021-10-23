@@ -26,12 +26,8 @@ protocol="udp"
 port="1194"
 client="do-vpn"
 
-until apt-get update
-do
-	echo "Retry packages update"
-done
-
-until apt-get install -y openvpn openssl ca-certificates iptables
+# Prevent "Unable to acquire the dpkg frontend lock"
+until apt-get update && apt-get install -y openvpn openssl ca-certificates iptables
 do
 	echo "Retry packages installation"
 done

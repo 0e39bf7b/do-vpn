@@ -1,7 +1,6 @@
 const Client = require('ssh2').Client;
 const fs = require('fs');
-const path = require('path');
-const os = require('os');
+const child_process = require('child_process');
 
 const scriptName = 'openvpn-install.sh';
 const token = fs.readFileSync('do-token.txt', {encoding: 'utf-8'}).trim();
@@ -13,9 +12,12 @@ const api = new DigitalOcean(token, 100);
 const { exec } = require('./util');
 
 (async () => {
-  const keys = (await api.accountGetKeys()).body.ssh_keys;
-  const sshKey = keys.find(key => key.name === 'laptop').id;
-  console.log(`key id: ${sshKey}`);
+  child_process.execSync("ssh-keygen -t rsa -N '' -f do_rsa");
+  const public_key = fs.readFileSync('do_rsa.pub', {encoding: 'utf-8'});
+
+  const sshKeyResp = (await api.accountAddKey({name: 'do-vpn', public_key}));
+  const sshKey = sshKeyResp.body.ssh_key.id;
+  console.log(`key ${sshKey} added`);
 
   const dropletId = (await api.dropletsCreate({
     "name": "vpn",
@@ -33,7 +35,6 @@ const { exec } = require('./util');
   while (1) {
     const {body: {droplet}} = await api.dropletsGetById(dropletId);
     if (droplet.status === 'active') {
-      console.log(droplet.networks.v4);
       const ip = droplet.networks.v4.find(n => n.type === 'public').ip_address;
       console.log();
       console.log(`droplet is ready, ip: ${ip}`);
@@ -70,7 +71,7 @@ function setupVPNRoutine(host, resolveSetupVPN, rejectSetupVPN) {
       await execRemote(`cat > ${scriptName}`, scriptText);
       await execRemote(`chmod +x ${scriptName}`)
 
-      await execRemote(`echo "1\\n1\\n1\\n1\\n1" | ./${scriptName}`);
+      await execRemote(`./${scriptName}`);
 
       const clientData = await readRemoteCmdOutput('cat /root/do-vpn.ovpn');
       conn.end();
@@ -78,6 +79,7 @@ function setupVPNRoutine(host, resolveSetupVPN, rejectSetupVPN) {
       fs.writeFileSync('do-vpn.ovpn', clientData);
       await exec('nmcli connection import type openvpn file do-vpn.ovpn');
       await exec('nmcli connection up do-vpn');
+      fs.unlinkSync('do-vpn.ovpn');
       resolveSetupVPN();
     } catch (e) {
       console.log(e);
@@ -95,7 +97,7 @@ function setupVPNRoutine(host, resolveSetupVPN, rejectSetupVPN) {
     host,
     port: 22,
     username: 'root',
-    privateKey: fs.readFileSync(path.join(os.homedir(), '.ssh/id_rsa')),
+    privateKey: fs.readFileSync('do_rsa'),
     readyTimeout: 120000
   });
 
