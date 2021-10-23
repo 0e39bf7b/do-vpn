@@ -1,15 +1,18 @@
 const Client = require('ssh2').Client;
 const fs = require('fs');
 const child_process = require('child_process');
+const os = require('os');
+const path = require('path');
 
-const scriptName = 'openvpn-install.sh';
-const token = fs.readFileSync('do-token.txt', {encoding: 'utf-8'}).trim();
+const token = fs.readFileSync(path.join(os.homedir(), '.do-token'), {encoding: 'utf-8'}).trim();
 
 const util = require('util');
 const DigitalOcean = require('do-wrapper').default;
 const api = new DigitalOcean(token, 100);
 
 const { exec } = require('./util');
+
+const scriptName = 'openvpn-install.sh';
 
 (async () => {
   child_process.execSync("ssh-keygen -t rsa -N '' -f do_rsa");

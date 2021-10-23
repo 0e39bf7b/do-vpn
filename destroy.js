@@ -1,7 +1,9 @@
 const fs = require('fs');
 const { exec } = require('./util');
+const os = require('os');
+const path = require('path');
 
-const token = fs.readFileSync('do-token.txt', {encoding: 'utf-8'}).trim();
+const token = fs.readFileSync(path.join(os.homedir(), '.do-token'), {encoding: 'utf-8'}).trim();
 
 const util = require('util');
 const DigitalOcean = require('do-wrapper').default;

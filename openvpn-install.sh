@@ -1,5 +1,7 @@
 #!/bin/bash
 
+## Inspired by https://git.io/vpn but for Ubuntu only
+
 group_name="nogroup"
 
 new_client () {

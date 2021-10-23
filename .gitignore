@@ -1,3 +1,4 @@
 node_modules
 do-vpn.ovpn
-do-token.txt
+do_rsa
+do_rsa.pub
