@@ -3,11 +3,11 @@ const { exec } = require('./util');
 const os = require('os');
 const path = require('path');
 
-const token = fs.readFileSync(path.join(os.homedir(), '.do-token'), {encoding: 'utf-8'}).trim();
+const config = JSON.parse(fs.readFileSync(path.join(os.homedir(), '.do-vpn.json'), {encoding: 'utf-8'}));
 
 const util = require('util');
 const DigitalOcean = require('do-wrapper').default;
-const api = new DigitalOcean(token, 100);
+const api = new DigitalOcean(config.token, 100);
 
 (async () => {
   try {

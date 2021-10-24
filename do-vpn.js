@@ -1,21 +1,20 @@
 const Client = require('ssh2').Client;
 const fs = require('fs');
-const child_process = require('child_process');
 const os = require('os');
 const path = require('path');
 
-const token = fs.readFileSync(path.join(os.homedir(), '.do-token'), {encoding: 'utf-8'}).trim();
+const config = JSON.parse(fs.readFileSync(path.join(os.homedir(), '.do-vpn.json'), {encoding: 'utf-8'}));
 
 const util = require('util');
 const DigitalOcean = require('do-wrapper').default;
-const api = new DigitalOcean(token, 100);
+const api = new DigitalOcean(config.token, 100);
 
 const { exec } = require('./util');
 
 const scriptName = 'openvpn-install.sh';
 
 (async () => {
-  child_process.execSync("ssh-keygen -t rsa -N '' -f do_rsa");
+  await exec("ssh-keygen -t rsa -N '' -f do_rsa");
   const public_key = fs.readFileSync('do_rsa.pub', {encoding: 'utf-8'});
 
   const sshKeyResp = (await api.accountAddKey({name: 'do-vpn', public_key}));
@@ -24,7 +23,7 @@ const scriptName = 'openvpn-install.sh';
 
   const dropletId = (await api.dropletsCreate({
     "name": "vpn",
-    "region": "ams3",
+    "region": config.region,
     "size": "s-1vcpu-1gb",
     "image": "ubuntu-20-04-x64",
     "ssh_keys": [sshKey],
