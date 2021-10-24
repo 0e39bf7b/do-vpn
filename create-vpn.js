@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const Client = require('ssh2').Client;
 const fs = require('fs');
 const os = require('os');
