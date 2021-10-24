@@ -16,8 +16,8 @@ const { exec } = require('./util');
 const scriptName = 'openvpn-install.sh';
 
 (async () => {
-  await exec("ssh-keygen -t rsa -N '' -f do_rsa");
-  const public_key = fs.readFileSync('do_rsa.pub', {encoding: 'utf-8'});
+  await exec("ssh-keygen -t rsa -N '' -f /tmp/do_rsa");
+  const public_key = fs.readFileSync('/tmp/do_rsa.pub', {encoding: 'utf-8'});
 
   const sshKeyResp = (await api.accountAddKey({name: 'do-vpn', public_key}));
   const sshKey = sshKeyResp.body.ssh_key.id;
@@ -71,7 +71,7 @@ function setupVPNRoutine(host, resolveSetupVPN, rejectSetupVPN) {
     try {
       console.log('starting setup');
 
-      const scriptText = fs.readFileSync(scriptName, {encoding: 'utf-8'});
+      const scriptText = fs.readFileSync(path.join(__dirname, scriptName), {encoding: 'utf-8'});
       await execRemote(`cat > ${scriptName}`, scriptText);
       await execRemote(`chmod +x ${scriptName}`)
 
@@ -80,10 +80,10 @@ function setupVPNRoutine(host, resolveSetupVPN, rejectSetupVPN) {
       const clientData = await readRemoteCmdOutput('cat /root/do-vpn.ovpn');
       conn.end();
 
-      fs.writeFileSync('do-vpn.ovpn', clientData);
-      await exec('nmcli connection import type openvpn file do-vpn.ovpn');
+      fs.writeFileSync('/tmp/do-vpn.ovpn', clientData);
+      await exec('nmcli connection import type openvpn file /tmp/do-vpn.ovpn');
       await exec('nmcli connection up do-vpn');
-      fs.unlinkSync('do-vpn.ovpn');
+      fs.unlinkSync('/tmp/do-vpn.ovpn');
       resolveSetupVPN();
     } catch (e) {
       console.log(e);
@@ -101,7 +101,7 @@ function setupVPNRoutine(host, resolveSetupVPN, rejectSetupVPN) {
     host,
     port: 22,
     username: 'root',
-    privateKey: fs.readFileSync('do_rsa'),
+    privateKey: fs.readFileSync('/tmp/do_rsa'),
     readyTimeout: 120000
   });
 

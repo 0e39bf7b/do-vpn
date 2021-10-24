@@ -36,8 +36,8 @@ const api = new DigitalOcean(config.token, 100);
     }
 
     try {
-      fs.unlinkSync('do_rsa');
-      fs.unlinkSync('do_rsa.pub');
+      fs.unlinkSync('/tmp/do_rsa');
+      fs.unlinkSync('/tmp/do_rsa.pub');
     } catch (e) {}
 
     console.log('Done');
